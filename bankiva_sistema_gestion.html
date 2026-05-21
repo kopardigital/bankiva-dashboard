@@ -1,0 +1,937 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --navy: #0f1b35;
+  --navy-2: #162247;
+  --indigo: #2a3f7e;
+  --violet: #4c5fc4;
+  --violet-light: #7b88d4;
+  --accent: #6ee7b7;
+  --accent-2: #34d399;
+  --accent-3: #059669;
+  --warn: #fbbf24;
+  --danger: #f87171;
+  --danger-2: #ef4444;
+  --white: #f8fafc;
+  --muted: #94a3b8;
+  --border: rgba(255,255,255,0.08);
+  --surface: rgba(255,255,255,0.04);
+  --surface-2: rgba(255,255,255,0.08);
+}
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--navy); color: var(--white); min-height: 100vh; }
+.app { display: flex; min-height: 100vh; }
+.sidebar {
+  width: 220px; flex-shrink: 0; background: var(--navy-2);
+  border-right: 1px solid var(--border); display: flex; flex-direction: column;
+  position: sticky; top: 0; height: 100vh; overflow-y: auto;
+}
+.logo { padding: 20px 16px 12px; border-bottom: 1px solid var(--border); }
+.logo-name { font-size: 18px; font-weight: 700; color: var(--accent); letter-spacing: 1px; }
+.logo-sub { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-top: 2px; }
+.nav { padding: 12px 8px; flex: 1; }
+.nav-group { margin-bottom: 20px; }
+.nav-label { font-size: 9px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; padding: 0 8px; margin-bottom: 6px; }
+.nav-item {
+  display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+  border-radius: 6px; cursor: pointer; font-size: 13px; color: var(--muted);
+  transition: all 0.15s; margin-bottom: 2px; border: none; background: none; width: 100%; text-align: left;
+}
+.nav-item:hover { background: var(--surface-2); color: var(--white); }
+.nav-item.active { background: rgba(110,231,183,0.12); color: var(--accent); }
+.nav-item i { font-size: 15px; width: 16px; }
+.badge { font-size: 10px; background: var(--danger-2); color: #fff; border-radius: 10px; padding: 1px 6px; margin-left: auto; }
+.main { flex: 1; overflow: auto; min-height: 100vh; }
+.topbar {
+  background: var(--navy-2); border-bottom: 1px solid var(--border);
+  padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10;
+}
+.topbar-title { font-size: 16px; font-weight: 600; }
+.topbar-period { font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.period-badge { background: rgba(110,231,183,0.15); color: var(--accent); font-size: 11px; padding: 3px 10px; border-radius: 20px; border: 1px solid rgba(110,231,183,0.3); }
+.content { padding: 24px; }
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.section-title { font-size: 20px; font-weight: 600; }
+.section-sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-bottom: 24px; }
+.kpi {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  padding: 16px; position: relative; overflow: hidden;
+}
+.kpi::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+.kpi.green::before { background: var(--accent-2); }
+.kpi.blue::before { background: var(--violet); }
+.kpi.amber::before { background: var(--warn); }
+.kpi.red::before { background: var(--danger-2); }
+.kpi.purple::before { background: #a78bfa; }
+.kpi-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+.kpi-value { font-size: 22px; font-weight: 700; line-height: 1; }
+.kpi-value.green { color: var(--accent-2); }
+.kpi-value.blue { color: var(--violet-light); }
+.kpi-value.amber { color: var(--warn); }
+.kpi-value.red { color: var(--danger); }
+.kpi-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 16px;
+}
+.card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.card-title { font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.card-title i { font-size: 16px; color: var(--accent); }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; padding: 8px 12px; border-bottom: 1px solid var(--border); }
+td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--surface-2); }
+.tag { display: inline-flex; align-items: center; font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 500; }
+.tag.green { background: rgba(52,211,153,0.15); color: var(--accent-2); }
+.tag.red { background: rgba(248,113,113,0.15); color: var(--danger); }
+.tag.amber { background: rgba(251,191,36,0.15); color: var(--warn); }
+.tag.blue { background: rgba(124,136,212,0.15); color: var(--violet-light); }
+.progress-bar { background: var(--surface-2); border-radius: 4px; height: 6px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+.alert-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px; border-radius: 8px; margin-bottom: 8px; }
+.alert-item.warn { background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.2); }
+.alert-item.danger { background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.2); }
+.alert-item.info { background: rgba(76,95,196,0.1); border: 1px solid rgba(76,95,196,0.2); }
+.alert-icon { font-size: 18px; margin-top: 1px; }
+.alert-title { font-size: 13px; font-weight: 600; }
+.alert-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer; border: none; transition: all 0.15s; }
+.btn-primary { background: var(--violet); color: #fff; }
+.btn-primary:hover { background: #5b6fd0; }
+.btn-outline { background: transparent; color: var(--white); border: 1px solid var(--border); }
+.btn-outline:hover { background: var(--surface-2); }
+.btn-sm { padding: 4px 10px; font-size: 11px; }
+.btn-green { background: rgba(52,211,153,0.2); color: var(--accent-2); border: 1px solid rgba(52,211,153,0.3); }
+.semaforo { display: flex; align-items: center; gap: 8px; }
+.semaforo-dot { width: 10px; height: 10px; border-radius: 50%; }
+.semaforo-dot.red { background: var(--danger-2); box-shadow: 0 0 6px var(--danger-2); }
+.semaforo-dot.amber { background: var(--warn); box-shadow: 0 0 6px var(--warn); }
+.semaforo-dot.green { background: var(--accent-2); box-shadow: 0 0 6px var(--accent-2); }
+.chart-bar-h { display: flex; flex-direction: column; gap: 10px; }
+.bar-row { display: flex; align-items: center; gap: 10px; }
+.bar-label { font-size: 12px; color: var(--muted); width: 130px; flex-shrink: 0; text-align: right; }
+.bar-track { flex: 1; background: var(--surface-2); border-radius: 4px; height: 20px; overflow: hidden; position: relative; }
+.bar-fill { height: 100%; border-radius: 4px; display: flex; align-items: center; padding-left: 8px; font-size: 11px; font-weight: 600; white-space: nowrap; overflow: hidden; min-width: 40px; }
+.bar-val { font-size: 12px; color: var(--muted); width: 80px; flex-shrink: 0; }
+.inline-chart { display: flex; align-items: flex-end; gap: 3px; height: 60px; }
+.ic-bar { flex: 1; border-radius: 3px 3px 0 0; min-width: 8px; transition: opacity 0.2s; }
+.ic-bar:hover { opacity: 0.8; }
+.month-tab { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+.mt-btn { padding: 5px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--muted); transition: all 0.15s; }
+.mt-btn.active { background: rgba(76,95,196,0.2); border-color: var(--violet); color: var(--violet-light); }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+.form-field { display: flex; flex-direction: column; gap: 5px; }
+.form-label { font-size: 11px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+.form-input { background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; color: var(--white); font-size: 13px; outline: none; }
+.form-input:focus { border-color: var(--violet); }
+.divider { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+.stat-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.stat-row:last-child { border-bottom: none; }
+.stat-name { font-size: 13px; color: var(--muted); }
+.stat-val { font-size: 13px; font-weight: 600; }
+.galpones-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.galpon-card { background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
+.galpon-name { font-size: 13px; font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+.galpon-name i { font-size: 14px; color: var(--accent); }
+.timeline-dots { display: flex; gap: 0; margin: 8px 0; }
+.td-dot { flex: 1; height: 4px; }
+.td-dot.filled { background: var(--violet); }
+.td-dot.empty { background: var(--surface-2); }
+.scroll-x { overflow-x: auto; }
+.page { display: none; }
+.page.active { display: block; }
+</style>
+
+<h2 class="sr-only">Sistema BANKIVA - Gestión de resultados productivos y comerciales avícolas</h2>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-name">BANKIVA</div>
+      <div class="logo-sub">Sistema de Gestión</div>
+    </div>
+    <nav class="nav">
+      <div class="nav-group">
+        <div class="nav-label">Principal</div>
+        <button class="nav-item active" onclick="showPage('dashboard')">
+          <i class="ti ti-layout-dashboard" aria-hidden="true"></i> Dashboard
+        </button>
+        <button class="nav-item" onclick="showPage('periodos')">
+          <i class="ti ti-calendar" aria-hidden="true"></i> Períodos
+        </button>
+      </div>
+      <div class="nav-group">
+        <div class="nav-label">Carga de Datos</div>
+        <button class="nav-item" onclick="showPage('stock')">
+          <i class="ti ti-building-warehouse" aria-hidden="true"></i> Stock Galpones
+        </button>
+        <button class="nav-item" onclick="showPage('produccion')">
+          <i class="ti ti-egg" aria-hidden="true"></i> Producción
+        </button>
+        <button class="nav-item" onclick="showPage('facturacion')">
+          <i class="ti ti-receipt" aria-hidden="true"></i> Facturación
+        </button>
+      </div>
+      <div class="nav-group">
+        <div class="nav-label">Análisis</div>
+        <button class="nav-item" onclick="showPage('resultado')">
+          <i class="ti ti-report-analytics" aria-hidden="true"></i> Resultado Mensual
+        </button>
+        <button class="nav-item" onclick="showPage('comparativo')">
+          <i class="ti ti-chart-line" aria-hidden="true"></i> Comparativo
+        </button>
+        <button class="nav-item" onclick="showPage('alertas')">
+          <i class="ti ti-bell" aria-hidden="true"></i> Alertas
+          <span class="badge">3</span>
+        </button>
+      </div>
+      <div class="nav-group">
+        <div class="nav-label">Sistema</div>
+        <button class="nav-item" onclick="showPage('reportes')">
+          <i class="ti ti-file-export" aria-hidden="true"></i> Reportes
+        </button>
+        <button class="nav-item" onclick="showPage('config')">
+          <i class="ti ti-settings" aria-hidden="true"></i> Configuración
+        </button>
+        <button class="nav-item" onclick="showPage('usuarios')">
+          <i class="ti ti-users" aria-hidden="true"></i> Usuarios
+        </button>
+        <button class="nav-item" onclick="showPage('auditoria')">
+          <i class="ti ti-history" aria-hidden="true"></i> Auditoría
+        </button>
+      </div>
+    </nav>
+    <div style="padding: 12px 16px; border-top: 1px solid var(--border);">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="width:28px;height:28px;border-radius:50%;background:var(--violet);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;">AD</div>
+        <div>
+          <div style="font-size:12px;font-weight:500;">Administrador</div>
+          <div style="font-size:10px;color:var(--muted);">Acceso total</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title" id="page-title">Dashboard General</div>
+        <div class="topbar-period">Período activo: <span class="period-badge">FEBRERO 2026</span></div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-outline btn-sm"><i class="ti ti-download"></i> Exportar</button>
+        <button class="btn btn-primary btn-sm"><i class="ti ti-plus"></i> Nueva Carga</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div id="page-dashboard" class="page active">
+        <div class="kpi-grid">
+          <div class="kpi green">
+            <div class="kpi-label">Huevos Producidos</div>
+            <div class="kpi-value green">566.175</div>
+            <div class="kpi-sub">Febrero 2026 · todos los galpones</div>
+          </div>
+          <div class="kpi blue">
+            <div class="kpi-label">Cajones Producidos</div>
+            <div class="kpi-value blue">1.573</div>
+            <div class="kpi-sub">a 360 unid/cajón</div>
+          </div>
+          <div class="kpi blue">
+            <div class="kpi-label">Cajones Vendidos</div>
+            <div class="kpi-value blue">1.406</div>
+            <div class="kpi-sub">facturación real</div>
+          </div>
+          <div class="kpi amber">
+            <div class="kpi-label">Facturación</div>
+            <div class="kpi-value amber">$56,6M</div>
+            <div class="kpi-sub">vs teórico $63,3M</div>
+          </div>
+          <div class="kpi red">
+            <div class="kpi-label">Diferencia</div>
+            <div class="kpi-value red">-$6,7M</div>
+            <div class="kpi-sub">real vs teórico</div>
+          </div>
+          <div class="kpi green">
+            <div class="kpi-label">Precio Prom Unit</div>
+            <div class="kpi-value green">$111,9</div>
+            <div class="kpi-sub">por huevo</div>
+          </div>
+          <div class="kpi purple">
+            <div class="kpi-label">% Postura Global</div>
+            <div class="kpi-value" style="color:#a78bfa">58,4%</div>
+            <div class="kpi-sub">promedio 4 galpones</div>
+          </div>
+          <div class="kpi amber">
+            <div class="kpi-label">% Mortandad</div>
+            <div class="kpi-value amber">0,98%</div>
+            <div class="kpi-sub">349 gallinas</div>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="ti ti-building-warehouse"></i> Producción por Galpón — Feb 2026</div>
+            </div>
+            <div class="chart-bar-h">
+              <div class="bar-row">
+                <div class="bar-label">Galpón 1 y 2</div>
+                <div class="bar-track">
+                  <div class="bar-fill" style="width:27%;background:var(--violet);">57.398</div>
+                </div>
+                <div class="bar-val">57.398 huevos</div>
+              </div>
+              <div class="bar-row">
+                <div class="bar-label">Automático A</div>
+                <div class="bar-track">
+                  <div class="bar-fill" style="width:19%;background:#a78bfa;">104.370</div>
+                </div>
+                <div class="bar-val">104.370 huevos</div>
+              </div>
+              <div class="bar-row">
+                <div class="bar-label">Automático B</div>
+                <div class="bar-track">
+                  <div class="bar-fill" style="width:54%;background:var(--accent-3);">306.986</div>
+                </div>
+                <div class="bar-val">306.986 huevos</div>
+              </div>
+              <div class="bar-row">
+                <div class="bar-label">Galpón 1</div>
+                <div class="bar-track">
+                  <div class="bar-fill" style="width:10%;background:var(--warn);">57.398</div>
+                </div>
+                <div class="bar-val">57.398 huevos</div>
+              </div>
+            </div>
+            <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);">
+              <div class="stat-row">
+                <span class="stat-name">Total gallinas en producción</span>
+                <span class="stat-val">35.620</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-name">Huevos por día promedio</span>
+                <span class="stat-val">18.264</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="ti ti-chart-pie"></i> Facturación por Tipo — Feb 2026</div>
+            </div>
+            <div style="margin-bottom:10px;">
+              <div class="bar-row" style="margin-bottom:7px;">
+                <div class="bar-label" style="width:110px;">Huevo Grande</div>
+                <div class="bar-track">
+                  <div class="bar-fill" style="width:26%;background:#3b82f6;color:#fff;font-size:10px;">$15,1M</div>
+                </div>
+                <div class="bar-val">321 caj.</div>
+              </div>
+              <div class="bar-row" style="margin-bottom:7px;">
+                <div class="bar-label" style="width:110px;">Huevo Mediano</div>
+                <div class="bar-track">
+                  <div class="bar-fill" style="width:57%;background:var(--violet);color:#fff;font-size:10px;">$32,5M</div>
+                </div>
+                <div class="bar-val">809 caj.</div>
+              </div>
+              <div class="bar-row" style="margin-bottom:7px;">
+                <div class="bar-label" style="width:110px;">Huevo Chico</div>
+                <div class="bar-track">
+                  <div class="bar-fill" style="width:12%;background:var(--accent-3);color:#fff;font-size:10px;">$7,0M</div>
+                </div>
+                <div class="bar-val">224 caj.</div>
+              </div>
+              <div class="bar-row" style="margin-bottom:7px;">
+                <div class="bar-label" style="width:110px;">Huevo Super</div>
+                <div class="bar-track">
+                  <div class="bar-fill" style="width:1%;background:var(--warn);min-width:30px;font-size:10px;">$324k</div>
+                </div>
+                <div class="bar-val">6 caj.</div>
+              </div>
+              <div class="bar-row">
+                <div class="bar-label" style="width:110px;">Huevo Sucio</div>
+                <div class="bar-track">
+                  <div class="bar-fill" style="width:3%;background:var(--danger);min-width:30px;font-size:10px;">$1,6M</div>
+                </div>
+                <div class="bar-val">46 caj.</div>
+              </div>
+            </div>
+            <div style="padding-top:12px;border-top:1px solid var(--border);">
+              <div class="stat-row">
+                <span class="stat-name">Total facturado</span>
+                <span class="stat-val" style="color:var(--accent-2)">$56.642.500</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-name">Precio cajón promedio</span>
+                <span class="stat-val">$40.286</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="ti ti-trending-up"></i> Evolución Mensual 2025–2026</div>
+            </div>
+            <div style="display:flex;gap:2px;align-items:flex-end;height:80px;margin-bottom:8px;">
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
+                <div style="flex:1;width:100%;background:var(--violet);border-radius:3px 3px 0 0;min-height:30px;height:70px;"></div>
+                <div style="font-size:9px;color:var(--muted);">Sep</div>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
+                <div style="flex:1;width:100%;background:var(--violet);border-radius:3px 3px 0 0;height:75px;"></div>
+                <div style="font-size:9px;color:var(--muted);">Oct</div>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
+                <div style="flex:1;width:100%;background:var(--violet);border-radius:3px 3px 0 0;height:65px;"></div>
+                <div style="font-size:9px;color:var(--muted);">Nov</div>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
+                <div style="flex:1;width:100%;background:var(--violet);border-radius:3px 3px 0 0;height:55px;"></div>
+                <div style="font-size:9px;color:var(--muted);">Dic</div>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
+                <div style="flex:1;width:100%;background:rgba(76,95,196,0.5);border-radius:3px 3px 0 0;height:60px;border:1px dashed var(--violet);"></div>
+                <div style="font-size:9px;color:var(--muted);">Ene-Feb</div>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
+                <div style="flex:1;width:100%;background:var(--accent-3);border-radius:3px 3px 0 0;height:40px;"></div>
+                <div style="font-size:9px;color:var(--accent);">Feb</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:12px;font-size:11px;color:var(--muted);">
+              <span><span style="display:inline-block;width:8px;height:8px;background:var(--violet);border-radius:2px;margin-right:4px;"></span>Huevos producidos</span>
+              <span><span style="display:inline-block;width:8px;height:8px;background:var(--accent-3);border-radius:2px;margin-right:4px;"></span>Facturación</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title"><i class="ti ti-alert-triangle"></i> Alertas Activas</div>
+            </div>
+            <div class="alert-item danger">
+              <i class="ti ti-alert-circle alert-icon" style="color:var(--danger-2)" aria-hidden="true"></i>
+              <div>
+                <div class="alert-title">Diferencia económica alta — Enero-Feb</div>
+                <div class="alert-desc">Diferencia de $22,5M entre venta teórica y real</div>
+              </div>
+            </div>
+            <div class="alert-item warn">
+              <i class="ti ti-chart-line alert-icon" style="color:var(--warn)" aria-hidden="true"></i>
+              <div>
+                <div class="alert-title">% Postura bajo — Galpón Auto A</div>
+                <div class="alert-desc">12% en Enero vs umbral mínimo 60%</div>
+              </div>
+            </div>
+            <div class="alert-item info">
+              <i class="ti ti-box alert-icon" style="color:var(--violet-light)" aria-hidden="true"></i>
+              <div>
+                <div class="alert-title">Faltante de cajones — Ene-Feb</div>
+                <div class="alert-desc">440,6 cajones sin justificación registrada</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PERIODOS -->
+      <div id="page-periodos" class="page">
+        <div class="section-header">
+          <div><div class="section-title">Períodos Mensuales</div><div class="section-sub">Gestión de ciclos de trabajo</div></div>
+          <button class="btn btn-primary"><i class="ti ti-plus"></i> Nuevo Período</button>
+        </div>
+        <div class="card">
+          <div class="scroll-x">
+            <table>
+              <thead>
+                <tr>
+                  <th>Período</th><th>Fechas</th><th>Días</th><th>Estado</th><th>Producción</th><th>Facturación</th><th>Diferencia</th><th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td style="font-weight:600">Septiembre 2025</td><td style="color:var(--muted)">01/09–30/09</td><td>30</td><td><span class="tag blue">Cerrado</span></td><td>733.805</td><td style="color:var(--accent-2)">$108.155.000</td><td style="color:var(--danger)">-$1.368.928</td><td><button class="btn btn-outline btn-sm"><i class="ti ti-eye"></i></button></td></tr>
+                <tr><td style="font-weight:600">Octubre 2025</td><td style="color:var(--muted)">01/10–31/10</td><td>31</td><td><span class="tag blue">Cerrado</span></td><td>873.061</td><td style="color:var(--accent-2)">$116.088.000</td><td style="color:var(--danger)">-$2.100.000</td><td><button class="btn btn-outline btn-sm"><i class="ti ti-eye"></i></button></td></tr>
+                <tr><td style="font-weight:600">Noviembre 2025</td><td style="color:var(--muted)">01/11–30/11</td><td>30</td><td><span class="tag blue">Cerrado</span></td><td>—</td><td>—</td><td>—</td><td><button class="btn btn-outline btn-sm"><i class="ti ti-eye"></i></button></td></tr>
+                <tr><td style="font-weight:600">Diciembre 2025</td><td style="color:var(--muted)">01/12–31/12</td><td>31</td><td><span class="tag blue">Cerrado</span></td><td>—</td><td>—</td><td>—</td><td><button class="btn btn-outline btn-sm"><i class="ti ti-eye"></i></button></td></tr>
+                <tr><td style="font-weight:600">Enero-Febrero 2026</td><td style="color:var(--muted)">01/01–28/02</td><td>59</td><td><span class="tag amber">Revisado</span></td><td>1.136.972</td><td style="color:var(--accent-2)">$118.497.500</td><td style="color:var(--danger)">-$22.547.734</td><td><button class="btn btn-outline btn-sm"><i class="ti ti-eye"></i></button></td></tr>
+                <tr style="background:rgba(110,231,183,0.04)"><td style="font-weight:600;color:var(--accent)">Febrero 2026</td><td style="color:var(--muted)">01/02–28/02</td><td>28</td><td><span class="tag green">Abierto</span></td><td>566.175</td><td style="color:var(--accent-2)">$56.642.500</td><td style="color:var(--danger)">-$6.682.500</td><td><button class="btn btn-green btn-sm"><i class="ti ti-edit"></i> Editar</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- STOCK GALPONES -->
+      <div id="page-stock" class="page">
+        <div class="section-header">
+          <div><div class="section-title">Stock de Galpones</div><div class="section-sub">Carga y seguimiento de gallinas por período</div></div>
+          <button class="btn btn-primary"><i class="ti ti-device-floppy"></i> Guardar</button>
+        </div>
+        <div class="month-tab">
+          <button class="mt-btn">Sep 2025</button><button class="mt-btn">Oct 2025</button>
+          <button class="mt-btn">Nov 2025</button><button class="mt-btn">Dic 2025</button>
+          <button class="mt-btn">Ene-Feb 2026</button><button class="mt-btn active">Feb 2026</button>
+        </div>
+        <div class="galpones-grid">
+          <div class="galpon-card">
+            <div class="galpon-name"><i class="ti ti-building" aria-hidden="true"></i> Galpón 1 y 2</div>
+            <div class="form-grid" style="grid-template-columns:1fr 1fr;gap:8px;">
+              <div class="form-field"><label class="form-label">Stock inicial</label><input class="form-input" type="number" value="7061"></div>
+              <div class="form-field"><label class="form-label">Mortandad</label><input class="form-input" type="number" value="122"></div>
+              <div class="form-field"><label class="form-label">Ingresos/Ajustes</label><input class="form-input" type="number" value="0"></div>
+              <div class="form-field"><label class="form-label">Stock final</label><input class="form-input" type="number" value="6939" style="background:rgba(52,211,153,0.05);border-color:rgba(52,211,153,0.3);"></div>
+            </div>
+            <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);">
+              Mortandad: <span style="color:var(--accent-2)">1,73%</span> · Edad: 54 semanas aprox.
+            </div>
+          </div>
+          <div class="galpon-card">
+            <div class="galpon-name"><i class="ti ti-building" aria-hidden="true"></i> Galpón Automático A</div>
+            <div class="form-grid" style="grid-template-columns:1fr 1fr;gap:8px;">
+              <div class="form-field"><label class="form-label">Stock inicial</label><input class="form-input" type="number" value="15200"></div>
+              <div class="form-field"><label class="form-label">Mortandad</label><input class="form-input" type="number" value="53"></div>
+              <div class="form-field"><label class="form-label">Ingresos/Ajustes</label><input class="form-input" type="number" value="0"></div>
+              <div class="form-field"><label class="form-label">Stock final</label><input class="form-input" type="number" value="15147" style="background:rgba(52,211,153,0.05);border-color:rgba(52,211,153,0.3);"></div>
+            </div>
+            <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);">
+              Mortandad: <span style="color:var(--accent-2)">0,35%</span> · Edad: gallinas bb recriadas
+            </div>
+          </div>
+          <div class="galpon-card">
+            <div class="galpon-name"><i class="ti ti-building" aria-hidden="true"></i> Galpón Automático B</div>
+            <div class="form-grid" style="grid-template-columns:1fr 1fr;gap:8px;">
+              <div class="form-field"><label class="form-label">Stock inicial</label><input class="form-input" type="number" value="13359"></div>
+              <div class="form-field"><label class="form-label">Mortandad</label><input class="form-input" type="number" value="174"></div>
+              <div class="form-field"><label class="form-label">Ingresos/Ajustes</label><input class="form-input" type="number" value="0"></div>
+              <div class="form-field"><label class="form-label">Stock final</label><input class="form-input" type="number" value="13185" style="background:rgba(52,211,153,0.05);border-color:rgba(52,211,153,0.3);"></div>
+            </div>
+            <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:12px;color:var(--muted);">
+              Mortandad: <span style="color:var(--accent-2)">1,30%</span> · Edad: 94 semanas
+            </div>
+          </div>
+          <div class="galpon-card" style="border:1px dashed var(--border);opacity:0.5;">
+            <div class="galpon-name"><i class="ti ti-plus" aria-hidden="true"></i> Agregar Galpón</div>
+            <div style="font-size:12px;color:var(--muted);text-align:center;padding:20px 0;">ABM de galpones en Configuración</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRODUCCION -->
+      <div id="page-produccion" class="page">
+        <div class="section-header">
+          <div><div class="section-title">Producción de Huevos</div><div class="section-sub">Carga por galpón — Febrero 2026 (28 días)</div></div>
+          <button class="btn btn-primary"><i class="ti ti-device-floppy"></i> Guardar</button>
+        </div>
+        <div class="card">
+          <div class="scroll-x">
+            <table>
+              <thead>
+                <tr>
+                  <th>Galpón</th><th>Componente / Edad</th><th>Cant. Promedio</th><th>Huevos Totales</th>
+                  <th>Huevos x Día <span style="color:var(--accent);font-weight:400">(auto)</span></th>
+                  <th>% Postura <span style="color:var(--accent);font-weight:400">(auto)</span></th>
+                  <th>Observaciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="font-weight:500">Galpón 1 y 2</td>
+                  <td><input class="form-input" value="gallinas 54 semanas" style="min-width:160px;padding:5px 8px;font-size:12px;"></td>
+                  <td><input class="form-input" type="number" value="7000" style="width:90px;padding:5px 8px;font-size:12px;"></td>
+                  <td><input class="form-input" type="number" value="154819" style="width:100px;padding:5px 8px;font-size:12px;"></td>
+                  <td style="color:var(--accent-2);font-weight:600">5.529</td>
+                  <td><span class="tag green">78,9%</span></td>
+                  <td><input class="form-input" placeholder="..." style="width:120px;padding:5px 8px;font-size:12px;"></td>
+                </tr>
+                <tr>
+                  <td style="font-weight:500">Auto A</td>
+                  <td><input class="form-input" value="gallina bb recriada" style="min-width:160px;padding:5px 8px;font-size:12px;"></td>
+                  <td><input class="form-input" type="number" value="15173" style="width:90px;padding:5px 8px;font-size:12px;"></td>
+                  <td><input class="form-input" type="number" value="104370" style="width:100px;padding:5px 8px;font-size:12px;"></td>
+                  <td style="color:var(--accent-2);font-weight:600">3.727</td>
+                  <td><span class="tag green">92,0%</span></td>
+                  <td><input class="form-input" placeholder="..." style="width:120px;padding:5px 8px;font-size:12px;"></td>
+                </tr>
+                <tr>
+                  <td style="font-weight:500">Auto B</td>
+                  <td><input class="form-input" value="gallinas 94 semanas" style="min-width:160px;padding:5px 8px;font-size:12px;"></td>
+                  <td><input class="form-input" type="number" value="13272" style="width:90px;padding:5px 8px;font-size:12px;"></td>
+                  <td><input class="form-input" type="number" value="306986" style="width:100px;padding:5px 8px;font-size:12px;"></td>
+                  <td style="color:var(--accent-2);font-weight:600">10.964</td>
+                  <td><span class="tag green">82,7%</span></td>
+                  <td><input class="form-input" placeholder="..." style="width:120px;padding:5px 8px;font-size:12px;"></td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr style="border-top:2px solid var(--border);font-weight:600;">
+                  <td colspan="2" style="color:var(--muted)">TOTALES</td>
+                  <td>35.445</td><td style="color:var(--accent-2)">566.175</td>
+                  <td style="color:var(--accent-2)">18.264</td>
+                  <td><span class="tag green">58,4%</span></td>
+                  <td></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+        <div class="card" style="background:rgba(76,95,196,0.06);">
+          <div class="card-title" style="margin-bottom:12px;"><i class="ti ti-calculator" style="font-size:15px;color:var(--accent)" aria-hidden="true"></i> Cálculos Automáticos — Cajones</div>
+          <div class="three-col">
+            <div class="stat-row" style="flex-direction:column;align-items:flex-start;gap:2px;border:none;">
+              <span class="stat-name">Cajones stock inicial</span><span class="stat-val">182 cajones</span>
+            </div>
+            <div class="stat-row" style="flex-direction:column;align-items:flex-start;gap:2px;border:none;">
+              <span class="stat-name">Cajones producidos</span><span class="stat-val">1.573 cajones</span>
+            </div>
+            <div class="stat-row" style="flex-direction:column;align-items:flex-start;gap:2px;border:none;">
+              <span class="stat-name">Cajones disponibles</span><span class="stat-val">1.755 cajones</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FACTURACION -->
+      <div id="page-facturacion" class="page">
+        <div class="section-header">
+          <div><div class="section-title">Facturación</div><div class="section-sub">Ventas por tipo de huevo — Febrero 2026</div></div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-outline btn-sm"><i class="ti ti-upload"></i> Importar Excel</button>
+            <button class="btn btn-primary"><i class="ti ti-device-floppy"></i> Guardar</button>
+          </div>
+        </div>
+        <div class="card">
+          <table>
+            <thead>
+              <tr>
+                <th>Código</th><th>Producto</th><th>Cajones Vendidos</th><th>Importe Total</th>
+                <th>Precio/Cajón <span style="color:var(--accent)">(auto)</span></th>
+                <th>Precio Unitario <span style="color:var(--accent)">(auto)</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="color:var(--muted)">00000002</td>
+                <td>Cajón Huevo Chico</td>
+                <td><input class="form-input" type="number" value="224" style="width:80px;padding:5px;font-size:12px;"></td>
+                <td><input class="form-input" type="number" value="7092000" style="width:110px;padding:5px;font-size:12px;"></td>
+                <td style="color:var(--accent-2);font-weight:600">$31.661</td>
+                <td style="color:var(--accent-2)">$87,95</td>
+              </tr>
+              <tr>
+                <td style="color:var(--muted)">00000003</td>
+                <td>Cajón Huevo Mediano</td>
+                <td><input class="form-input" type="number" value="809" style="width:80px;padding:5px;font-size:12px;"></td>
+                <td><input class="form-input" type="number" value="32530000" style="width:110px;padding:5px;font-size:12px;"></td>
+                <td style="color:var(--accent-2);font-weight:600">$40.210</td>
+                <td style="color:var(--accent-2)">$111,69</td>
+              </tr>
+              <tr>
+                <td style="color:var(--muted)">00000004</td>
+                <td>Cajón Huevo Grande</td>
+                <td><input class="form-input" type="number" value="321" style="width:80px;padding:5px;font-size:12px;"></td>
+                <td><input class="form-input" type="number" value="15118500" style="width:110px;padding:5px;font-size:12px;"></td>
+                <td style="color:var(--accent-2);font-weight:600">$47.098</td>
+                <td style="color:var(--accent-2)">$130,83</td>
+              </tr>
+              <tr>
+                <td style="color:var(--muted)">00000005</td>
+                <td>Cajón Huevo Super</td>
+                <td><input class="form-input" type="number" value="6" style="width:80px;padding:5px;font-size:12px;"></td>
+                <td><input class="form-input" type="number" value="324000" style="width:110px;padding:5px;font-size:12px;"></td>
+                <td style="color:var(--accent-2);font-weight:600">$54.000</td>
+                <td style="color:var(--accent-2)">$150,00</td>
+              </tr>
+              <tr>
+                <td style="color:var(--muted)">00000007</td>
+                <td>Cajón Huevo Sucio</td>
+                <td><input class="form-input" type="number" value="46" style="width:80px;padding:5px;font-size:12px;"></td>
+                <td><input class="form-input" type="number" value="1578000" style="width:110px;padding:5px;font-size:12px;"></td>
+                <td style="color:var(--accent-2);font-weight:600">$34.304</td>
+                <td style="color:var(--accent-2)">$95,29</td>
+              </tr>
+            </tbody>
+            <tfoot>
+              <tr style="font-weight:700;border-top:2px solid var(--border);">
+                <td colspan="2" style="color:var(--muted)">TOTAL GENERAL</td>
+                <td style="color:var(--accent-2)">1.406 caj.</td>
+                <td style="color:var(--accent-2)">$56.642.500</td>
+                <td style="color:var(--accent-2)">$40.286</td>
+                <td style="color:var(--accent-2)">$111,91</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- RESULTADO MENSUAL -->
+      <div id="page-resultado" class="page">
+        <div class="section-header">
+          <div><div class="section-title">Resultado Mensual</div><div class="section-sub">Resumen ejecutivo — Febrero 2026</div></div>
+          <button class="btn btn-outline btn-sm"><i class="ti ti-file-export"></i> Exportar PDF</button>
+        </div>
+        <div class="two-col">
+          <div class="card">
+            <div class="card-header"><div class="card-title"><i class="ti ti-egg"></i> Módulo Productivo</div></div>
+            <div class="stat-row"><span class="stat-name">Gallinas en producción</span><span class="stat-val">35.620</span></div>
+            <div class="stat-row"><span class="stat-name">Huevos producidos</span><span class="stat-val">566.175</span></div>
+            <div class="stat-row"><span class="stat-name">Huevos por día</span><span class="stat-val">18.264</span></div>
+            <div class="stat-row"><span class="stat-name">% Postura promedio</span><span class="stat-val" style="color:var(--accent-2)">58,4%</span></div>
+            <div class="stat-row"><span class="stat-name">Mortandad</span><span class="stat-val">349 gallinas (0,98%)</span></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title"><i class="ti ti-coins"></i> Módulo Económico</div></div>
+            <div class="stat-row"><span class="stat-name">Precio promedio unitario</span><span class="stat-val">$111,91</span></div>
+            <div class="stat-row"><span class="stat-name">Stock inicial valorizado</span><span class="stat-val">$26.769.646</span></div>
+            <div class="stat-row"><span class="stat-name">Producción valorizada</span><span class="stat-val">$63.362.500</span></div>
+            <div class="stat-row"><span class="stat-name">Disponible para venta</span><span class="stat-val" style="color:var(--accent-2)">$90.132.146</span></div>
+            <div class="stat-row"><span class="stat-name">Stock final valorizado</span><span class="stat-val">$6.995.000</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title"><i class="ti ti-scale"></i> Comparación Teórico vs Real</div></div>
+          <div class="three-col">
+            <div style="text-align:center;padding:16px 0;">
+              <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">Venta teórica</div>
+              <div style="font-size:28px;font-weight:700;color:var(--violet-light)">$83,1M</div>
+            </div>
+            <div style="text-align:center;padding:16px 0;border-left:1px solid var(--border);border-right:1px solid var(--border);">
+              <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">Facturación real</div>
+              <div style="font-size:28px;font-weight:700;color:var(--accent-2)">$56,6M</div>
+            </div>
+            <div style="text-align:center;padding:16px 0;">
+              <div style="font-size:12px;color:var(--muted);margin-bottom:8px;">Diferencia</div>
+              <div style="font-size:28px;font-weight:700;color:var(--danger)">-$26,5M</div>
+              <div class="semaforo" style="justify-content:center;margin-top:6px;">
+                <div class="semaforo-dot red"></div>
+                <span style="font-size:11px;color:var(--muted)">Diferencia alta</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title"><i class="ti ti-box"></i> Cajones — Cierre de Período</div></div>
+          <div class="form-grid">
+            <div class="stat-row" style="flex-direction:column;align-items:flex-start;border:none;gap:2px;"><span class="stat-name">Cajones stock inicial</span><span class="stat-val">182</span></div>
+            <div class="stat-row" style="flex-direction:column;align-items:flex-start;border:none;gap:2px;"><span class="stat-name">Cajones producidos</span><span class="stat-val">1.573</span></div>
+            <div class="stat-row" style="flex-direction:column;align-items:flex-start;border:none;gap:2px;"><span class="stat-name">Cajones vendidos</span><span class="stat-val">1.406</span></div>
+            <div class="stat-row" style="flex-direction:column;align-items:flex-start;border:none;gap:2px;"><span class="stat-name">Cajones stock final</span><span class="stat-val">205</span></div>
+            <div class="stat-row" style="flex-direction:column;align-items:flex-start;border:none;gap:2px;"><span class="stat-name">Faltante de cajones</span><span class="stat-val" style="color:var(--danger)">144 cajones</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COMPARATIVO -->
+      <div id="page-comparativo" class="page">
+        <div class="section-header">
+          <div><div class="section-title">Comparativo Histórico</div><div class="section-sub">Evolución de indicadores 2025–2026</div></div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="margin-bottom:16px;"><i class="ti ti-table" aria-hidden="true"></i> Resumen por Período</div>
+          <div class="scroll-x">
+            <table>
+              <thead>
+                <tr>
+                  <th>Período</th><th>Huevos</th><th>% Postura</th><th>Mortandad</th><th>Cajones vendidos</th><th>Facturación</th><th>Diferencia</th><th>Semáforo</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Sep 2025</td><td>733.805</td><td>66,2%</td><td>2,84%</td><td>2.104</td><td>$108.155.000</td><td style="color:var(--danger)">-$1.368.928</td><td><span class="semaforo"><span class="semaforo-dot amber"></span></span></td></tr>
+                <tr><td>Oct 2025</td><td>873.061</td><td>—</td><td>3,27%</td><td>—</td><td>$116.088.000</td><td style="color:var(--danger)">-$2.100.000</td><td><span class="semaforo"><span class="semaforo-dot amber"></span></span></td></tr>
+                <tr><td>Ene-Feb 2026</td><td>1.136.972</td><td>—</td><td>4,32%</td><td>3.099</td><td>$118.497.500</td><td style="color:var(--danger)">-$22.547.734</td><td><span class="semaforo"><span class="semaforo-dot red"></span></span></td></tr>
+                <tr style="background:rgba(110,231,183,0.04)"><td style="color:var(--accent)"><strong>Feb 2026</strong></td><td>566.175</td><td>58,4%</td><td>0,98%</td><td>1.406</td><td style="color:var(--accent-2)">$56.642.500</td><td style="color:var(--danger)">-$6.682.500</td><td><span class="semaforo"><span class="semaforo-dot red"></span></span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ALERTAS -->
+      <div id="page-alertas" class="page">
+        <div class="section-header">
+          <div><div class="section-title">Alertas del Sistema</div><div class="section-sub">Monitoreo automático de indicadores</div></div>
+          <button class="btn btn-outline btn-sm"><i class="ti ti-settings"></i> Configurar umbrales</button>
+        </div>
+        <div class="alert-item danger">
+          <i class="ti ti-alert-circle alert-icon" style="color:var(--danger-2);font-size:22px;" aria-hidden="true"></i>
+          <div style="flex:1;">
+            <div class="alert-title" style="font-size:14px;">Diferencia económica crítica — Enero-Febrero 2026</div>
+            <div class="alert-desc" style="font-size:13px;margin-top:4px;">La diferencia entre venta teórica ($141.045.234) y facturación real ($118.497.500) es de <strong>$22.547.734</strong>, superando el umbral configurado de $5.000.000. Requiere revisión urgente.</div>
+            <div style="margin-top:8px;font-size:12px;color:var(--muted);">Detectado: 01/03/2026 08:14 · Período: Ene-Feb 2026</div>
+          </div>
+          <span class="tag red">Crítico</span>
+        </div>
+        <div class="alert-item warn">
+          <i class="ti ti-trending-down alert-icon" style="color:var(--warn);font-size:22px;" aria-hidden="true"></i>
+          <div style="flex:1;">
+            <div class="alert-title" style="font-size:14px;">Postura muy baja — Galpón Automático A — Enero 2026</div>
+            <div class="alert-desc" style="font-size:13px;margin-top:4px;">El porcentaje de postura del Galpón Automático A fue de <strong>12%</strong> en Enero 2026, muy por debajo del umbral mínimo del 60%. Posible situación de estrés, enfermedad o renovación de lote.</div>
+            <div style="margin-top:8px;font-size:12px;color:var(--muted);">Detectado: 01/02/2026 10:22 · Período: Enero 2026</div>
+          </div>
+          <span class="tag amber">Advertencia</span>
+        </div>
+        <div class="alert-item info">
+          <i class="ti ti-package alert-icon" style="color:var(--violet-light);font-size:22px;" aria-hidden="true"></i>
+          <div style="flex:1;">
+            <div class="alert-title" style="font-size:14px;">Faltante de cajones — Enero-Febrero 2026</div>
+            <div class="alert-desc" style="font-size:13px;margin-top:4px;">Se detecta un faltante de <strong>440,6 cajones</strong> (158.633 huevos) en el período Enero-Febrero. Diferencia entre disponible y registros de stock + ventas.</div>
+            <div style="margin-top:8px;font-size:12px;color:var(--muted);">Detectado: 28/02/2026 · Período: Ene-Feb 2026</div>
+          </div>
+          <span class="tag blue">Información</span>
+        </div>
+        <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">
+          <div style="font-size:13px;font-weight:600;margin-bottom:12px;color:var(--muted);">Umbrales configurados</div>
+          <div class="form-grid" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr));">
+            <div class="galpon-card">
+              <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Diferencia económica máxima</div>
+              <div style="font-size:18px;font-weight:700;">$5.000.000</div>
+            </div>
+            <div class="galpon-card">
+              <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">% Mortandad máxima</div>
+              <div style="font-size:18px;font-weight:700;">5,0%</div>
+            </div>
+            <div class="galpon-card">
+              <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">% Postura mínima</div>
+              <div style="font-size:18px;font-weight:700;">60,0%</div>
+            </div>
+            <div class="galpon-card">
+              <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Unidades por cajón</div>
+              <div style="font-size:18px;font-weight:700;">360 huevos</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- REPORTES -->
+      <div id="page-reportes" class="page">
+        <div class="section-header">
+          <div><div class="section-title">Reportes</div><div class="section-sub">Exportación y generación de informes</div></div>
+        </div>
+        <div class="three-col">
+          <div class="galpon-card" style="cursor:pointer;" onmouseover="this.style.borderColor='var(--violet)'" onmouseout="this.style.borderColor='var(--border)'">
+            <i class="ti ti-file-text" style="font-size:28px;color:var(--violet-light);margin-bottom:10px;" aria-hidden="true"></i>
+            <div style="font-weight:600;margin-bottom:6px;">Reporte Mensual</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Producción, facturación y diferencias del período seleccionado.</div>
+            <button class="btn btn-primary btn-sm" style="width:100%;justify-content:center;"><i class="ti ti-download"></i> PDF</button>
+          </div>
+          <div class="galpon-card" style="cursor:pointer;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+            <i class="ti ti-building" style="font-size:28px;color:var(--accent-2);margin-bottom:10px;" aria-hidden="true"></i>
+            <div style="font-weight:600;margin-bottom:6px;">Reporte por Galpón</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Detalle de producción, mortandad y postura por galpón.</div>
+            <button class="btn btn-green btn-sm" style="width:100%;justify-content:center;"><i class="ti ti-download"></i> Excel</button>
+          </div>
+          <div class="galpon-card" style="cursor:pointer;" onmouseover="this.style.borderColor='var(--warn)'" onmouseout="this.style.borderColor='var(--border)'">
+            <i class="ti ti-chart-bar" style="font-size:28px;color:var(--warn);margin-bottom:10px;" aria-hidden="true"></i>
+            <div style="font-weight:600;margin-bottom:6px;">Comparativo Histórico</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Evolución de todos los indicadores entre períodos.</div>
+            <button class="btn btn-outline btn-sm" style="width:100%;justify-content:center;"><i class="ti ti-download"></i> PDF + Excel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONFIGURACION -->
+      <div id="page-config" class="page">
+        <div class="section-header">
+          <div><div class="section-title">Configuración</div><div class="section-sub">Parámetros del sistema BANKIVA</div></div>
+          <button class="btn btn-primary"><i class="ti ti-device-floppy"></i> Guardar cambios</button>
+        </div>
+        <div class="two-col">
+          <div class="card">
+            <div class="card-title" style="margin-bottom:14px;"><i class="ti ti-adjustments" aria-hidden="true"></i> Parámetros de producción</div>
+            <div class="form-grid" style="grid-template-columns:1fr;">
+              <div class="form-field"><label class="form-label">Unidades por cajón</label><input class="form-input" type="number" value="360"></div>
+              <div class="form-field"><label class="form-label">% Postura mínimo (alerta)</label><input class="form-input" type="number" value="60"></div>
+              <div class="form-field"><label class="form-label">% Mortandad máximo (alerta)</label><input class="form-input" type="number" value="5"></div>
+              <div class="form-field"><label class="form-label">Diferencia económica máx (alerta)</label><input class="form-input" type="number" value="5000000"></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title" style="margin-bottom:14px;"><i class="ti ti-building" aria-hidden="true"></i> ABM Galpones</div>
+            <table>
+              <thead><tr><th>Nombre</th><th>Tipo</th><th>Estado</th><th></th></tr></thead>
+              <tbody>
+                <tr><td>Galpón 1 y 2</td><td>Manual</td><td><span class="tag green">Activo</span></td><td><button class="btn btn-outline btn-sm"><i class="ti ti-edit"></i></button></td></tr>
+                <tr><td>Automático A</td><td>Automático</td><td><span class="tag green">Activo</span></td><td><button class="btn btn-outline btn-sm"><i class="ti ti-edit"></i></button></td></tr>
+                <tr><td>Automático B</td><td>Automático</td><td><span class="tag green">Activo</span></td><td><button class="btn btn-outline btn-sm"><i class="ti ti-edit"></i></button></td></tr>
+              </tbody>
+            </table>
+            <button class="btn btn-outline btn-sm" style="margin-top:10px;"><i class="ti ti-plus"></i> Nuevo galpón</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- USUARIOS -->
+      <div id="page-usuarios" class="page">
+        <div class="section-header">
+          <div><div class="section-title">Usuarios y Roles</div><div class="section-sub">Gestión de acceso al sistema</div></div>
+          <button class="btn btn-primary"><i class="ti ti-plus"></i> Nuevo usuario</button>
+        </div>
+        <div class="card">
+          <table>
+            <thead><tr><th>Usuario</th><th>Nombre</th><th>Rol</th><th>Accesos</th><th>Último acceso</th><th>Estado</th></tr></thead>
+            <tbody>
+              <tr><td>admin</td><td>Administrador</td><td><span class="tag blue">Administrador</span></td><td>Total</td><td>Hoy</td><td><span class="tag green">Activo</span></td></tr>
+              <tr><td>operario1</td><td>Carga Operativa</td><td><span class="tag amber">Operativo</span></td><td>Stock, Producción, Mortandad</td><td>Ayer</td><td><span class="tag green">Activo</span></td></tr>
+              <tr><td>admin_comercial</td><td>Administración</td><td><span class="tag amber">Administración</span></td><td>Facturación, Reportes Econ.</td><td>26/02/2026</td><td><span class="tag green">Activo</span></td></tr>
+              <tr><td>direccion</td><td>Dirección</td><td><span class="tag blue">Dirección</span></td><td>Dashboard, Reportes</td><td>01/03/2026</td><td><span class="tag green">Activo</span></td></tr>
+              <tr><td>auditor</td><td>Auditor Externo</td><td><span class="tag" style="background:rgba(148,163,184,0.1);color:var(--muted);">Auditor</span></td><td>Solo lectura</td><td>20/02/2026</td><td><span class="tag green">Activo</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- AUDITORIA -->
+      <div id="page-auditoria" class="page">
+        <div class="section-header">
+          <div><div class="section-title">Auditoría</div><div class="section-sub">Historial de cambios para trazabilidad</div></div>
+        </div>
+        <div class="card">
+          <table>
+            <thead><tr><th>Fecha/Hora</th><th>Usuario</th><th>Acción</th><th>Módulo</th><th>Período</th><th>Valor anterior</th><th>Valor nuevo</th></tr></thead>
+            <tbody>
+              <tr><td style="color:var(--muted);font-size:12px;">28/02/2026 14:32</td><td>admin</td><td>Modificación</td><td>Facturación</td><td>Feb 2026</td><td>55.000.000</td><td style="color:var(--accent-2)">56.642.500</td></tr>
+              <tr><td style="color:var(--muted);font-size:12px;">28/02/2026 11:15</td><td>operario1</td><td>Carga</td><td>Stock Galpones</td><td>Feb 2026</td><td>—</td><td style="color:var(--accent-2)">35.620 gallinas</td></tr>
+              <tr><td style="color:var(--muted);font-size:12px;">27/02/2026 09:40</td><td>operario1</td><td>Carga</td><td>Producción</td><td>Feb 2026</td><td>—</td><td style="color:var(--accent-2)">566.175 huevos</td></tr>
+              <tr><td style="color:var(--muted);font-size:12px;">01/02/2026 16:22</td><td>admin</td><td>Cierre</td><td>Períodos</td><td>Ene 2026</td><td>Abierto</td><td style="color:var(--accent-2)">Cerrado</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script>
+const pages = {
+  'dashboard': 'Dashboard General',
+  'periodos': 'Períodos Mensuales',
+  'stock': 'Stock de Galpones',
+  'produccion': 'Producción de Huevos',
+  'facturacion': 'Facturación',
+  'resultado': 'Resultado Mensual',
+  'comparativo': 'Comparativo Histórico',
+  'alertas': 'Alertas del Sistema',
+  'reportes': 'Reportes',
+  'config': 'Configuración',
+  'usuarios': 'Usuarios y Roles',
+  'auditoria': 'Auditoría'
+};
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const el = document.getElementById('page-' + id);
+  if (el) el.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.getAttribute('onclick') === "showPage('" + id + "')") n.classList.add('active');
+  });
+  const t = document.getElementById('page-title');
+  if (t) t.textContent = pages[id] || id;
+}
+</script>
