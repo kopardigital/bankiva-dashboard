@@ -1,0 +1,620 @@
+
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font-sans);background:var(--color-background-tertiary);color:var(--color-text-primary)}
+  .header{background:var(--color-background-primary);border-bottom:0.5px solid var(--color-border-tertiary);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+  .logo{display:flex;align-items:center;gap:10px}
+  .logo-badge{width:36px;height:36px;border-radius:8px;background:#1D9E75;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:500;font-size:13px}
+  .logo-text{font-size:18px;font-weight:500;color:var(--color-text-primary)}
+  .logo-sub{font-size:12px;color:var(--color-text-secondary)}
+  .header-actions{display:flex;gap:10px;align-items:center}
+  .upload-btn{display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary);cursor:pointer;font-size:14px;transition:background 0.15s}
+  .upload-btn:hover{background:var(--color-background-secondary)}
+  .upload-btn.primary{background:#1D9E75;color:#fff;border-color:#0F6E56}
+  .upload-btn.primary:hover{background:#0F6E56}
+  .status-pill{font-size:12px;padding:4px 10px;border-radius:20px;background:var(--color-background-success);color:var(--color-text-success)}
+  .status-pill.loading{background:var(--color-background-info);color:var(--color-text-info)}
+  .status-pill.error{background:var(--color-background-danger);color:var(--color-text-danger)}
+  .main{padding:20px 24px;max-width:1200px;margin:0 auto}
+  .section-title{font-size:13px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:0.05em;margin:20px 0 10px}
+  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:6px}
+  .kpi-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:14px 16px}
+  .kpi-label{font-size:12px;color:var(--color-text-secondary);margin-bottom:6px;display:flex;align-items:center;gap:5px}
+  .kpi-value{font-size:22px;font-weight:500;color:var(--color-text-primary);line-height:1.1}
+  .kpi-delta{font-size:11px;margin-top:4px;color:var(--color-text-success)}
+  .kpi-delta.neg{color:var(--color-text-danger)}
+  .charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:4px}
+  .chart-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:16px 18px}
+  .chart-card.full{grid-column:1/-1}
+  .chart-title{font-size:14px;font-weight:500;margin-bottom:4px;color:var(--color-text-primary)}
+  .chart-sub{font-size:12px;color:var(--color-text-secondary);margin-bottom:12px}
+  .chart-wrap{position:relative;width:100%}
+  .filters-bar{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:14px 18px;margin-bottom:16px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+  .filter-group{display:flex;flex-direction:column;gap:4px}
+  .filter-label{font-size:11px;color:var(--color-text-secondary)}
+  select,input[type=text]{font-size:13px;padding:6px 10px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-primary);min-width:130px}
+  .table-wrap{overflow-x:auto;margin-top:8px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{background:var(--color-background-secondary);color:var(--color-text-secondary);font-weight:500;padding:8px 12px;text-align:left;border-bottom:0.5px solid var(--color-border-tertiary);white-space:nowrap}
+  td{padding:8px 12px;border-bottom:0.5px solid var(--color-border-tertiary);color:var(--color-text-primary)}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:var(--color-background-secondary)}
+  .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px}
+  .badge-g{background:#E1F5EE;color:#0F6E56}
+  .badge-a{background:#FAEEDA;color:#854F0B}
+  .badge-r{background:#FCEBEB;color:#A32D2D}
+  .upload-area{border:1.5px dashed var(--color-border-secondary);border-radius:var(--border-radius-lg);padding:40px 20px;text-align:center;cursor:pointer;transition:background 0.15s;margin:24px 0}
+  .upload-area:hover{background:var(--color-background-secondary)}
+  .upload-area-icon{font-size:36px;color:var(--color-text-secondary);margin-bottom:12px}
+  .sheet-tabs{display:flex;gap:6px;margin-bottom:16px}
+  .tab{padding:6px 14px;border-radius:20px;font-size:13px;cursor:pointer;border:0.5px solid var(--color-border-secondary);background:var(--color-background-primary);color:var(--color-text-secondary)}
+  .tab.active{background:#1D9E75;color:#fff;border-color:#0F6E56}
+  .legend-row{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:8px;font-size:12px;color:var(--color-text-secondary)}
+  .legend-row span{display:flex;align-items:center;gap:5px}
+  .legend-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+  #fileInput{display:none}
+  @media(max-width:640px){.charts-grid{grid-template-columns:1fr}.chart-card.full{grid-column:unset}}
+</style>
+
+<h2 class="sr-only">Tablero ejecutivo BANKIVA 2025–2026: producción de huevos, facturación y stock de galpones</h2>
+
+<div class="header">
+  <div class="logo">
+    <div class="logo-badge">BK</div>
+    <div>
+      <div class="logo-text">BANKIVA</div>
+      <div class="logo-sub">Panel Ejecutivo · 2025–2026</div>
+    </div>
+  </div>
+  <div class="header-actions">
+    <span class="status-pill" id="statusPill">✓ Datos cargados</span>
+    <button class="upload-btn primary" onclick="document.getElementById('fileInput').click()">
+      <i class="ti ti-upload" aria-hidden="true"></i> Cargar Excel
+    </button>
+    <button class="upload-btn" onclick="resetDashboard()">
+      <i class="ti ti-refresh" aria-hidden="true"></i> Limpiar
+    </button>
+    <input type="file" id="fileInput" accept=".xlsx,.xls" onchange="handleFileUpload(event)">
+  </div>
+</div>
+
+<div class="main" id="mainContent"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+const BANKIVA_DATA = {
+  meses: ['Sep', 'Oct', 'Nov', 'Dic', 'Ene-Feb'],
+  mesesFull: ['Septiembre', 'Octubre', 'Noviembre', 'Diciembre', 'Enero-Feb'],
+  facturacion: [108155000, 114155000, 93539500, 66889500, 118497500],
+  venta: [109523927.8, 123633782.2, 114582885.7, 80956464.27, 141045234.1],
+  huevos: [733805, 873061, 755407, 774016, 1136972],
+  cajones: [2104, 2219, 1845, 1409, 3099.5],
+  stockFinal: [12718323.76, 13855659.58, 5656985.046, 26769646.3, 6995000],
+  precioUnit: [142.79, 142.90, 140.83, 131.87, 101.45],
+  mortandad: [1031, 1153, 1083, 1286, 349+718],
+  galponesData: {
+    sep: [{g:'Galpón 1y2',huevos:190206,postura:73.95},{g:'Aut. A',huevos:293413,postura:78.88},{g:'Aut. B',huevos:250186,postura:56.62}],
+    oct: [{g:'Galpón 1y2',huevos:164411,postura:64.43},{g:'Aut. A',huevos:297480,postura:80.41},{g:'Aut. B',huevos:411170,postura:91.15}],
+    nov: [{g:'Galpón 1y2',huevos:98835,postura:42.75},{g:'Aut. A',huevos:268170,postura:78.01},{g:'Aut. B',huevos:388402,postura:90.20}],
+    dic: [{g:'Galpón 1y2',huevos:147226,postura:64.45},{g:'Aut. A',huevos:259470,postura:76.44},{g:'Aut. B',huevos:367320,postura:84.38}],
+    enefeb: [{g:'Galpón 1y2',huevos:339097,postura:81.1},{g:'Aut. A',huevos:148620,postura:53.6},{g:'Aut. B',huevos:649255,postura:82.2}]
+  },
+  facturacionDetalle: {
+    sep: [
+      {p:'Huevo Chico',cant:492,importe:21424000},
+      {p:'Huevo Grande',cant:1382,importe:76492000},
+      {p:'Huevo Sucio',cant:53,importe:2385000},
+      {p:'Huevo Súper',cant:6,importe:384000},
+      {p:'Inicio/Boli',cant:161,importe:7030000},
+      {p:'Huevo Mediano',cant:10,importe:440000}
+    ],
+    oct: [
+      {p:'Huevo Chico',cant:740,importe:35116000},
+      {p:'Huevo Grande',cant:1054,importe:58996000},
+      {p:'Huevo Sucio',cant:84,importe:3780000},
+      {p:'Huevo Súper',cant:19,importe:1207000},
+      {p:'Inicio/Boli',cant:316,importe:14792000},
+      {p:'Huevo Mediano',cant:6,importe:264000}
+    ],
+    nov: [
+      {p:'Huevo Chico',cant:1070,importe:52095000},
+      {p:'Huevo Grande',cant:700.5,importe:37999500},
+      {p:'Huevo Sucio',cant:69,importe:3093000},
+      {p:'Huevo Súper',cant:5.5,importe:352000}
+    ],
+    dic: [
+      {p:'Huevo Chico',cant:801,importe:37700000},
+      {p:'Huevo Grande',cant:503,importe:24891500},
+      {p:'Huevo Sucio',cant:97,importe:3866000},
+      {p:'Huevo Súper',cant:8,importe:432000}
+    ],
+    ene: [
+      {p:'Huevo Chico',cant:793,importe:27355000},
+      {p:'Huevo Mediano',cant:77,importe:2818000},
+      {p:'Huevo Grande',cant:746.5,importe:29531000},
+      {p:'Huevo Sucio',cant:77,importe:2151000}
+    ],
+    feb: [
+      {p:'Huevo Chico',cant:224,importe:7092000},
+      {p:'Huevo Mediano',cant:809,importe:32530000},
+      {p:'Huevo Grande',cant:321,importe:15118500},
+      {p:'Huevo Súper',cant:6,importe:324000},
+      {p:'Huevo Sucio',cant:46,importe:1578000}
+    ]
+  }
+};
+
+let currentData = BANKIVA_DATA;
+let currentSheet = 'overview';
+let allCharts = [];
+let activeFilter = 'todos';
+
+function fmt(n){return new Intl.NumberFormat('es-AR').format(Math.round(n))}
+function fmtM(n){return '$'+new Intl.NumberFormat('es-AR').format(Math.round(n/1000000))+'M'}
+function fmtK(n){return new Intl.NumberFormat('es-AR').format(Math.round(n/1000))+'k'}
+function pct(a,b){return b?((a-b)/b*100).toFixed(1)+'%':'—'}
+
+const COLORS = {
+  teal:['#1D9E75','#5DCAA5','#9FE1CB'],
+  blue:['#378ADD','#85B7EB','#B5D4F4'],
+  amber:['#BA7517','#EF9F27','#FAC775'],
+  coral:['#D85A30','#F0997B','#F5C4B3'],
+  purple:['#7F77DD','#AFA9EC','#CECBF6'],
+  gray:['#888780','#B4B2A9','#D3D1C7']
+};
+
+function destroyCharts(){allCharts.forEach(c=>{try{c.destroy()}catch(e){}});allCharts=[]}
+
+function renderDashboard(){
+  destroyCharts();
+  const d = currentData;
+  const main = document.getElementById('mainContent');
+  const totalFact = d.facturacion.reduce((a,b)=>a+b,0);
+  const totalHuevos = d.huevos.reduce((a,b)=>a+b,0);
+  const totalCajones = d.cajones.reduce((a,b)=>a+b,0);
+  const avgPrecio = d.precioUnit.reduce((a,b)=>a+b,0)/d.precioUnit.length;
+  const maxFact = Math.max(...d.facturacion);
+  const minFact = Math.min(...d.facturacion);
+  const bestMes = d.mesesFull[d.facturacion.indexOf(maxFact)];
+  const totalMort = d.mortandad.reduce((a,b)=>a+b,0);
+
+  main.innerHTML = `
+    <div class="section-title"><i class="ti ti-layout-dashboard" aria-hidden="true"></i> Indicadores principales</div>
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label"><i class="ti ti-receipt" style="font-size:14px" aria-hidden="true"></i> Facturación total</div>
+        <div class="kpi-value">${fmtM(totalFact)}</div>
+        <div class="kpi-delta">6 períodos acumulados</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label"><i class="ti ti-egg" style="font-size:14px" aria-hidden="true"></i> Huevos producidos</div>
+        <div class="kpi-value">${fmtK(totalHuevos)}</div>
+        <div class="kpi-delta">Total acumulado</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label"><i class="ti ti-package" style="font-size:14px" aria-hidden="true"></i> Cajones vendidos</div>
+        <div class="kpi-value">${fmt(totalCajones)}</div>
+        <div class="kpi-delta">Acum. todos los períodos</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label"><i class="ti ti-trending-up" style="font-size:14px" aria-hidden="true"></i> Precio prom. unit.</div>
+        <div class="kpi-value">$${avgPrecio.toFixed(1)}</div>
+        <div class="kpi-delta">Promedio general</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label"><i class="ti ti-star" style="font-size:14px" aria-hidden="true"></i> Mejor mes</div>
+        <div class="kpi-value" style="font-size:16px">${bestMes}</div>
+        <div class="kpi-delta">${fmtM(maxFact)}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label"><i class="ti ti-building" style="font-size:14px" aria-hidden="true"></i> Galpones activos</div>
+        <div class="kpi-value">3</div>
+        <div class="kpi-delta">Galpón 1y2 · Aut. A · Aut. B</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label"><i class="ti ti-arrow-down-right" style="font-size:14px" aria-hidden="true"></i> Mortandad total</div>
+        <div class="kpi-value">${fmt(totalMort)}</div>
+        <div class="kpi-delta kpi-delta neg">Acumulada</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label"><i class="ti ti-chart-bar" style="font-size:14px" aria-hidden="true"></i> Fact. mín / máx</div>
+        <div class="kpi-value" style="font-size:15px">${fmtM(minFact)} / ${fmtM(maxFact)}</div>
+        <div class="kpi-delta">Rango mensual</div>
+      </div>
+    </div>
+
+    <div class="section-title" style="margin-top:24px"><i class="ti ti-chart-line" aria-hidden="true"></i> Evolución temporal</div>
+    <div class="charts-grid">
+      <div class="chart-card full">
+        <div class="chart-title">Facturación vs Venta estimada por período</div>
+        <div class="chart-sub">Comparación entre factura emitida e importe estimado de venta</div>
+        <div class="legend-row">
+          <span><span class="legend-dot" style="background:#1D9E75"></span>Facturación</span>
+          <span><span class="legend-dot" style="background:#378ADD"></span>Venta estimada</span>
+        </div>
+        <div class="chart-wrap" style="height:240px"><canvas id="c1" role="img" aria-label="Facturación y venta por período mensual">Comparación de facturación y venta por mes.</canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Producción de huevos</div>
+        <div class="chart-sub">Huevos totales por período</div>
+        <div class="chart-wrap" style="height:200px"><canvas id="c2" role="img" aria-label="Producción de huevos por período">Producción de huevos mensual.</canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Precio promedio por unidad</div>
+        <div class="chart-sub">Evolución del precio unitario ($)</div>
+        <div class="chart-wrap" style="height:200px"><canvas id="c3" role="img" aria-label="Precio unitario por período">Precio promedio por unidad mensual.</canvas></div>
+      </div>
+    </div>
+
+    <div class="section-title" style="margin-top:20px"><i class="ti ti-building-warehouse" aria-hidden="true"></i> Análisis por galpón</div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-title">Huevos producidos por galpón</div>
+        <div class="chart-sub">Distribución total acumulada</div>
+        <div class="legend-row" id="legGalpon"></div>
+        <div class="chart-wrap" style="height:200px"><canvas id="c4" role="img" aria-label="Producción por galpón">Producción acumulada por galpón.</canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">% Postura promedio por galpón</div>
+        <div class="chart-sub">Eficiencia productiva comparada</div>
+        <div class="chart-wrap" style="height:200px"><canvas id="c5" role="img" aria-label="Porcentaje de postura por galpón">Postura promedio por galpón.</canvas></div>
+      </div>
+    </div>
+
+    <div class="section-title" style="margin-top:20px"><i class="ti ti-cash" aria-hidden="true"></i> Mix de facturación</div>
+    <div class="charts-grid">
+      <div class="chart-card">
+        <div class="chart-title">Facturación por tipo de producto</div>
+        <div class="chart-sub">Septiembre 2025</div>
+        <div class="legend-row" id="legProd"></div>
+        <div class="chart-wrap" style="height:200px"><canvas id="c6" role="img" aria-label="Facturación por producto septiembre">Mix de productos septiembre 2025.</canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Cajones vendidos por período</div>
+        <div class="chart-sub">Volumen de ventas</div>
+        <div class="chart-wrap" style="height:200px"><canvas id="c7" role="img" aria-label="Cajones vendidos por período">Cajones vendidos mensuales.</canvas></div>
+      </div>
+    </div>
+
+    <div class="section-title" style="margin-top:20px"><i class="ti ti-table" aria-hidden="true"></i> Tabla de detalle</div>
+    <div class="chart-card full" style="margin-bottom:24px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+        <div>
+          <div class="chart-title">Resumen por período</div>
+          <div class="chart-sub">Todos los indicadores consolidados</div>
+        </div>
+        <input type="text" id="searchInput" placeholder="Buscar período..." style="width:180px" oninput="filterTable(this.value)">
+      </div>
+      <div class="table-wrap">
+        <table id="mainTable">
+          <thead><tr>
+            <th>Período</th>
+            <th>Facturación</th>
+            <th>Venta est.</th>
+            <th>Diferencia</th>
+            <th>Huevos</th>
+            <th>Cajones</th>
+            <th>Precio unit.</th>
+            <th>Stock final</th>
+            <th>Tendencia</th>
+          </tr></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  buildTable();
+  buildCharts(d);
+}
+
+function buildTable(){
+  const d = currentData;
+  const body = document.getElementById('tableBody');
+  body.innerHTML = d.mesesFull.map((m,i)=>{
+    const diff = d.venta[i]-d.facturacion[i];
+    const diffClass = diff>0?'badge-g':'badge-r';
+    const diffSign = diff>0?'+':'';
+    const trend = i===0?'—':pct(d.facturacion[i],d.facturacion[i-1]);
+    const trendNum = i===0?0:(d.facturacion[i]-d.facturacion[i-1])/d.facturacion[i-1]*100;
+    const trendClass = trendNum>=0?'badge-g':'badge-r';
+    return `<tr data-mes="${m.toLowerCase()}">
+      <td><strong>${m}</strong></td>
+      <td>${fmtM(d.facturacion[i])}</td>
+      <td>${fmtM(d.venta[i])}</td>
+      <td><span class="badge ${diffClass}">${diffSign}${fmtM(diff)}</span></td>
+      <td>${fmt(d.huevos[i])}</td>
+      <td>${fmt(d.cajones[i])}</td>
+      <td>$${d.precioUnit[i].toFixed(2)}</td>
+      <td>${fmtM(d.stockFinal[i])}</td>
+      <td><span class="badge ${i===0?'badge-a':trendClass}">${i===0?'Base':trend}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function filterTable(q){
+  document.querySelectorAll('#tableBody tr').forEach(r=>{
+    r.style.display=r.dataset.mes.includes(q.toLowerCase())?'':'none';
+  });
+}
+
+function buildCharts(d){
+  const isDark = matchMedia('(prefers-color-scheme: dark)').matches;
+  const gridColor = isDark?'rgba(255,255,255,0.07)':'rgba(0,0,0,0.07)';
+  const textColor = isDark?'#aaa':'#666';
+  const baseOpts = {responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{
+    x:{grid:{color:gridColor},ticks:{color:textColor,font:{size:11}}},
+    y:{grid:{color:gridColor},ticks:{color:textColor,font:{size:11}}}
+  }};
+
+  // Chart 1: Facturación vs Venta
+  allCharts.push(new Chart(document.getElementById('c1'),{
+    type:'bar',
+    data:{labels:d.meses,datasets:[
+      {label:'Facturación',data:d.facturacion.map(v=>Math.round(v/1000000)),backgroundColor:'#1D9E75',borderRadius:4},
+      {label:'Venta est.',data:d.venta.map(v=>Math.round(v/1000000)),backgroundColor:'#378ADD',borderRadius:4}
+    ]},
+    options:{...baseOpts,plugins:{legend:{display:false}},scales:{
+      x:{grid:{color:gridColor},ticks:{color:textColor,font:{size:11}}},
+      y:{grid:{color:gridColor},ticks:{color:textColor,font:{size:11},callback:v=>'$'+v+'M'}}
+    }}
+  }));
+
+  // Chart 2: Huevos
+  allCharts.push(new Chart(document.getElementById('c2'),{
+    type:'line',
+    data:{labels:d.meses,datasets:[{
+      label:'Huevos',data:d.huevos.map(v=>Math.round(v/1000)),
+      borderColor:'#1D9E75',backgroundColor:'rgba(29,158,117,0.08)',
+      borderWidth:2,pointRadius:4,pointBackgroundColor:'#1D9E75',fill:true,tension:0.3
+    }]},
+    options:{...baseOpts,scales:{
+      x:{grid:{color:gridColor},ticks:{color:textColor,font:{size:11}}},
+      y:{grid:{color:gridColor},ticks:{color:textColor,font:{size:11},callback:v=>v+'k'}}
+    }}
+  }));
+
+  // Chart 3: Precio unitario
+  allCharts.push(new Chart(document.getElementById('c3'),{
+    type:'line',
+    data:{labels:d.meses,datasets:[{
+      label:'Precio',data:d.precioUnit,
+      borderColor:'#BA7517',backgroundColor:'rgba(186,117,23,0.08)',
+      borderWidth:2,pointRadius:4,pointBackgroundColor:'#BA7517',fill:true,tension:0.3
+    }]},
+    options:{...baseOpts,scales:{
+      x:{grid:{color:gridColor},ticks:{color:textColor,font:{size:11}}},
+      y:{grid:{color:gridColor},ticks:{color:textColor,font:{size:11},callback:v=>'$'+v}}
+    }}
+  }));
+
+  // Chart 4: Producción por galpón (acumulado)
+  const gNames = ['Galpón 1y2','Aut. A','Aut. B'];
+  const gColors = ['#1D9E75','#378ADD','#BA7517'];
+  const gTotals = gNames.map((g,gi)=>{
+    const keys = Object.values(d.galponesData);
+    return keys.reduce((sum,mes)=>sum+(mes[gi]?mes[gi].huevos:0),0);
+  });
+  const legEl = document.getElementById('legGalpon');
+  legEl.innerHTML = gNames.map((g,i)=>`<span><span class="legend-dot" style="background:${gColors[i]}"></span>${g}</span>`).join('');
+  allCharts.push(new Chart(document.getElementById('c4'),{
+    type:'doughnut',
+    data:{labels:gNames,datasets:[{data:gTotals,backgroundColor:gColors,borderWidth:2,borderColor:isDark?'#222':'#fff'}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+fmt(ctx.raw)+' huevos'}}}}
+  }));
+
+  // Chart 5: % Postura por galpón
+  const gPostura = gNames.map((g,gi)=>{
+    const keys = Object.values(d.galponesData);
+    const vals = keys.map(mes=>mes[gi]?mes[gi].postura:null).filter(v=>v!==null);
+    return vals.length?(vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1):0;
+  });
+  allCharts.push(new Chart(document.getElementById('c5'),{
+    type:'bar',
+    data:{labels:gNames,datasets:[{
+      label:'% Postura',data:gPostura,backgroundColor:gColors,borderRadius:6
+    }]},
+    options:{...baseOpts,scales:{
+      x:{grid:{color:gridColor},ticks:{color:textColor,font:{size:11}}},
+      y:{grid:{color:gridColor},min:0,max:100,ticks:{color:textColor,font:{size:11},callback:v=>v+'%'}}
+    }}
+  }));
+
+  // Chart 6: Mix productos Sep
+  const prods = d.facturacionDetalle.sep;
+  const pColors = ['#1D9E75','#378ADD','#BA7517','#D85A30','#7F77DD','#888780'];
+  const legProd = document.getElementById('legProd');
+  legProd.innerHTML = prods.map((p,i)=>`<span><span class="legend-dot" style="background:${pColors[i%pColors.length]}"></span>${p.p}</span>`).join('');
+  allCharts.push(new Chart(document.getElementById('c6'),{
+    type:'doughnut',
+    data:{labels:prods.map(p=>p.p),datasets:[{data:prods.map(p=>p.importe),backgroundColor:pColors.slice(0,prods.length),borderWidth:2,borderColor:isDark?'#222':'#fff'}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+fmtM(ctx.raw)}}}}
+  }));
+
+  // Chart 7: Cajones por período
+  allCharts.push(new Chart(document.getElementById('c7'),{
+    type:'bar',
+    data:{labels:d.meses,datasets:[{
+      label:'Cajones',data:d.cajones.map(v=>Math.round(v)),backgroundColor:'#7F77DD',borderRadius:4
+    }]},
+    options:{...baseOpts}
+  }));
+}
+
+function handleFileUpload(event){
+  const file = event.target.files[0];
+  if(!file) return;
+  if(!file.name.match(/\.(xlsx|xls)$/i)){
+    showStatus('Error: solo se aceptan archivos .xlsx o .xls','error');
+    return;
+  }
+  showStatus('Procesando archivo...','loading');
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const wb = XLSX.read(e.target.result,{type:'array'});
+      processWorkbook(wb, file.name);
+    }catch(err){
+      showStatus('Error al leer el archivo','error');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+  event.target.value='';
+}
+
+function processWorkbook(wb, fname){
+  const sheetName = wb.SheetNames[0];
+  const ws = wb.Sheets[sheetName];
+  const raw = XLSX.utils.sheet_to_json(ws,{header:1,defval:null});
+  
+  // Detectar encabezados: buscar primera fila con varios valores no nulos
+  let headerRow = -1;
+  for(let i=0;i<Math.min(10,raw.length);i++){
+    const filled = raw[i].filter(c=>c!==null&&String(c).trim()!=='').length;
+    if(filled>=3){headerRow=i;break;}
+  }
+  
+  if(headerRow<0){showStatus('No se pudieron detectar datos en el archivo','error');return;}
+  
+  const headers = raw[headerRow].map((h,i)=>h?String(h).trim():`Col${i+1}`);
+  const rows = raw.slice(headerRow+1).filter(r=>r.some(c=>c!==null&&String(c).trim()!==''));
+  
+  // Detectar columnas por tipo
+  const numCols = [], dateCols = [], catCols = [];
+  const importeKw = /importe|total|monto|precio|factur|venta|saldo|valor/i;
+  const fechaKw = /fecha|date|mes|period/i;
+  const catKw = /cliente|proveedor|categor|rubro|producto|área|area|estado|tipo|galpon|galpón|nombre/i;
+  
+  headers.forEach((h,i)=>{
+    const vals = rows.map(r=>r[i]).filter(v=>v!==null&&v!=='');
+    const numVals = vals.filter(v=>!isNaN(parseFloat(String(v).replace(',','.'))));
+    if(numVals.length/vals.length>0.7) numCols.push({idx:i,name:h,isImporte:importeKw.test(h)});
+    else if(fechaKw.test(h)) dateCols.push({idx:i,name:h});
+    else catCols.push({idx:i,name:h});
+  });
+  
+  // Calcular KPIs genéricos
+  const importeCols = numCols.filter(c=>c.isImporte);
+  const mainNumCol = importeCols.length?importeCols[0]:numCols[0];
+  
+  if(!mainNumCol){showStatus('No se detectaron columnas numéricas','error');return;}
+  
+  const vals = rows.map(r=>{
+    const v = r[mainNumCol.idx];
+    return parseFloat(String(v||0).replace(/\./g,'').replace(',','.'));
+  }).filter(v=>!isNaN(v)&&v!==0);
+  
+  const total = vals.reduce((a,b)=>a+b,0);
+  const avg = total/vals.length;
+  const max = Math.max(...vals);
+  const min = Math.min(...vals);
+  
+  // Categorías
+  const catData = {};
+  if(catCols.length){
+    const catCol = catCols[0];
+    rows.forEach(r=>{
+      const cat = r[catCol.idx]?String(r[catCol.idx]).trim():'Sin categoría';
+      const val = parseFloat(String(r[mainNumCol.idx]||0).replace(/\./g,'').replace(',','.'));
+      if(!isNaN(val)) catData[cat]=(catData[cat]||0)+val;
+    });
+  }
+  
+  renderGenericDashboard({
+    fname, sheetName, headers, rows, numCols, dateCols, catCols,
+    mainNumCol, vals, total, avg, max, min, catData,
+    totalRows: rows.length
+  });
+  showStatus(`✓ ${fname} cargado`,'ok');
+}
+
+function renderGenericDashboard(p){
+  destroyCharts();
+  const isDark = matchMedia('(prefers-color-scheme: dark)').matches;
+  const gridColor = isDark?'rgba(255,255,255,0.07)':'rgba(0,0,0,0.07)';
+  const textColor = isDark?'#aaa':'#666';
+  const main = document.getElementById('mainContent');
+  const catEntries = Object.entries(p.catData).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const catColors = ['#1D9E75','#378ADD','#BA7517','#D85A30','#7F77DD','#888780','#5DCAA5','#85B7EB','#EF9F27','#F0997B'];
+
+  main.innerHTML = `
+    <div style="background:var(--color-background-info);color:var(--color-text-info);border-radius:var(--border-radius-md);padding:10px 16px;margin-bottom:16px;font-size:13px">
+      <strong>Archivo cargado:</strong> ${p.fname} · Hoja: ${p.sheetName} · ${p.totalRows} filas · Col. numérica: ${p.mainNumCol.name}
+      ${p.catCols.length?` · Dimensión: ${p.catCols[0].name}`:''}
+    </div>
+    <div class="section-title">Indicadores principales</div>
+    <div class="kpi-grid">
+      <div class="kpi-card"><div class="kpi-label">Total registros</div><div class="kpi-value">${fmt(p.totalRows)}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Total ${p.mainNumCol.name}</div><div class="kpi-value">${fmt(p.total)}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Promedio</div><div class="kpi-value">${fmt(p.avg)}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Máximo</div><div class="kpi-value">${fmt(p.max)}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Mínimo</div><div class="kpi-value">${fmt(p.min)}</div></div>
+      <div class="kpi-card"><div class="kpi-label">Categorías</div><div class="kpi-value">${Object.keys(p.catData).length||'—'}</div></div>
+    </div>
+    ${catEntries.length?`
+    <div class="section-title" style="margin-top:20px">Top 10 por categoría</div>
+    <div class="charts-grid">
+      <div class="chart-card full">
+        <div class="chart-title">Ranking por ${p.catCols[0]?.name||'categoría'}</div>
+        <div class="legend-row">${catEntries.slice(0,5).map((e,i)=>`<span><span class="legend-dot" style="background:${catColors[i]}"></span>${e[0].substring(0,20)}</span>`).join('')}</div>
+        <div class="chart-wrap" style="height:${catEntries.length*42+60}px"><canvas id="cg1" role="img" aria-label="Ranking por categoría">Ranking top 10 por categoría.</canvas></div>
+      </div>
+    </div>`:''}
+    <div class="section-title" style="margin-top:20px">Tabla de datos</div>
+    <div class="chart-card full" style="margin-bottom:24px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+        <div class="chart-title">Vista detallada · ${p.sheetName}</div>
+        <input type="text" placeholder="Buscar..." style="width:180px" oninput="filterGenTable(this.value)">
+      </div>
+      <div class="table-wrap">
+        <table id="genTable">
+          <thead><tr>${p.headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead>
+          <tbody>${p.rows.slice(0,100).map(r=>`<tr>${p.headers.map((_,i)=>`<td>${r[i]!==null&&r[i]!==undefined?r[i]:''}</td>`).join('')}</tr>`).join('')}</tbody>
+        </table>
+      </div>
+      ${p.rows.length>100?`<div style="font-size:12px;color:var(--color-text-secondary);margin-top:8px">Mostrando 100 de ${p.rows.length} filas</div>`:''}
+    </div>
+  `;
+
+  if(catEntries.length){
+    allCharts.push(new Chart(document.getElementById('cg1'),{
+      type:'bar',
+      data:{
+        labels:catEntries.map(e=>e[0].substring(0,30)),
+        datasets:[{label:p.mainNumCol.name,data:catEntries.map(e=>Math.round(e[1])),backgroundColor:catColors.slice(0,catEntries.length),borderRadius:4}]
+      },
+      options:{
+        indexAxis:'y',responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false}},
+        scales:{
+          x:{grid:{color:gridColor},ticks:{color:textColor,font:{size:11}}},
+          y:{grid:{color:gridColor},ticks:{color:textColor,font:{size:11}}}
+        }
+      }
+    }));
+  }
+}
+
+function filterGenTable(q){
+  const t = document.getElementById('genTable');
+  if(!t) return;
+  t.querySelectorAll('tbody tr').forEach(r=>{
+    r.style.display=r.textContent.toLowerCase().includes(q.toLowerCase())?'':'none';
+  });
+}
+
+function showStatus(msg, type){
+  const pill = document.getElementById('statusPill');
+  pill.textContent = msg;
+  pill.className = 'status-pill'+(type==='loading'?' loading':type==='error'?' error':'');
+}
+
+function resetDashboard(){
+  currentData = BANKIVA_DATA;
+  showStatus('✓ Datos BANKIVA cargados','ok');
+  renderDashboard();
+}
+
+renderDashboard();
+</script>
